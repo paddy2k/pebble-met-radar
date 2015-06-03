@@ -1,5 +1,7 @@
 #include <pebble.h>
 
+#define READY 0 
+  
 /* The key used to transmit download data. Contains byte array. */
 #define NETDL_DATA 0x696d6700 
 /* The key used to start a new image transmission. Contains uint32 size */

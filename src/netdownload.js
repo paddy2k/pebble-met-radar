@@ -1,51 +1,5 @@
 var transferInProgress = false;
-
-Pebble.addEventListener("ready", function(e) {
-  console.log("NetDownload JS Ready");
-// console.log(navigator.userAgent);
-//   window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder;
-//   console.log(typeof BlobBuilder);
-//   console.log(typeof Blob);
-//   console.log(typeof WebKitBlobBuilder);
-  
-//   var xhr = new XMLHttpRequest();
-//   xhr.open('GET', 'http://www.met.ie/weathermaps/radar2/WEB_radar3_201503301000.png', true);
-//   xhr.responseType = 'blob';
-//   xhr.setRequestHeader("Referer", "http://www.met.ie/latest/rainfall_radar.asp");
-  
-//   xhr.onload = function(e) {
-//     if (this.status == 200) { 
-//       if(window.BlobBuilder){
-//         console.log('GO BlobBuilder');
-//         var bb              = new BlobBuilder ();
-//         bb.append (request.response); // Note: not request.responseText
-    
-//         var blob            = bb.getBlob ('image/png');
-//         var reader          = new FileReader ();
-//         reader.onload       = function (zFR_Event) {
-//             console.log(zFR_Event.target.result); 
-//             $("body").prepend ('<p>New image: <img src="' + zFR_Event.target.result + '"></p>')
-//         };
-//       }
-//       else if(window.Blob){
-//         console.log('GO Blob');
-//         // Note: .response instead of .responseText
-//         var blob = new Blob([this.response], {type: 'image/png'});  
-//         var url = URL.createObjectURL(blob);
-//         console.log(url); 
-//         $("body").prepend ('<p>New image: <img src="' + url + '"></p>');
-//       }
-//       else{
-//         console.log('FAIL ERROR');
-//       }
-      
-      
-      
-//     }
-//   };
-  
-//   xhr.send();
-});
+var imageCache = [];
 
 Pebble.addEventListener("appmessage", function(e) {
   console.log("Got message: " + JSON.stringify(e));
@@ -71,12 +25,21 @@ Pebble.addEventListener("appmessage", function(e) {
 });
 
 function downloadBinaryResource(imageURL, callback, errorCallback) {
+    // Check cache
+    if(imageCache[imageURL]){
+      console.log('Cache: Hit');
+      callback(imageCache[imageURL]);
+      return false;
+    }
+    console.log('Cache: Miss');
+  
     var req = new XMLHttpRequest();
     console.log('GET: '+imageURL);
     req.open("GET", imageURL,true);
     req.responseType = "arraybuffer";
     req.onload = function(e) {
         console.log("loaded");
+      console.log(req.response);
         var buf = req.response;
         console.log('STATUS: '+req.status);
         if(req.status == 200 && buf) {
@@ -87,6 +50,8 @@ function downloadBinaryResource(imageURL, callback, errorCallback) {
             }
 
             console.log("Downloaded file with " + byteArray.length + " bytes.");
+            // Save to cache
+            imageCache[imageURL] = arr;
             callback(arr);
         }
         else {

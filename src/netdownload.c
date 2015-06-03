@@ -1,5 +1,6 @@
 #include "netdownload.h"
-
+#include "radar.h"
+  
 NetDownloadContext* netdownload_create_context(NetDownloadCallback callback) {
   NetDownloadContext *ctx = malloc(sizeof(NetDownloadContext));
 
@@ -109,6 +110,12 @@ void netdownload_receive(DictionaryIterator *iter, void *context) {
       else {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Got End message but we have no image...");
       }
+      break;
+    
+    case READY:
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "JS READY!!!");
+//         show_radar();
+        get_image(0);
       break;
     default:
       APP_LOG(APP_LOG_LEVEL_WARNING, "Unknown key in dict: %lu", tuple->key);
