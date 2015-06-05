@@ -9,6 +9,9 @@ static BitmapLayer *bitmap_layer;
 static GBitmap *current_bmp;
 static GFont s_res_gothic_24_bold;
 static TextLayer *s_textlayer_1;
+static GBitmap *s_res_info_screen;
+static BitmapLayer *s_bitmaplayer_1;
+AppTimer *timer;
 
 static unsigned long image = 0;
 static bool playing = false;
@@ -64,6 +67,11 @@ void show_prev_image() {
 }
 
 
+void hide_info_screen (void *data){
+  bitmap_layer_destroy(s_bitmaplayer_1);
+  gbitmap_destroy(s_res_info_screen);
+}
+
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
@@ -80,6 +88,15 @@ static void window_load(Window *window) {
   text_layer_set_text(s_textlayer_1, time_stamp);
   text_layer_set_font(s_textlayer_1, s_res_gothic_24_bold);
   layer_add_child(window_layer, (Layer *)s_textlayer_1);
+  
+  // Display an info screen with instructions
+  s_res_info_screen = gbitmap_create_with_resource(RESOURCE_ID_INFO_SCREEN);
+  s_bitmaplayer_1 = bitmap_layer_create(GRect(0, 0, 144, 168));
+  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_info_screen);
+  layer_add_child(window_layer, (Layer *)s_bitmaplayer_1);
+
+  // Wait 1s then remove info screen
+  timer = app_timer_register(1000, (AppTimerCallback) hide_info_screen, NULL);
 }
 
 void select_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -142,8 +159,8 @@ void show_radar(void) {
     .load = window_load,
     .unload = window_unload,
   });
-  const bool animated = true;
-  window_stack_push(window, animated);
+  
+  window_stack_push(window, false);
   window_set_click_config_provider(window, click_config_provider); 
   
   tick_timer_service_subscribe(SECOND_UNIT, (TickHandler) tick_handler);
@@ -163,11 +180,7 @@ void download_complete_handler(NetDownload *download) {
   
   bitmap_layer_set_bitmap(bitmap_layer, NULL);
   
-  #ifdef PBL_PLATFORM_APLITE
-  GBitmap *bmp = gbitmap_create_with_png_data(download->data, download->length);
-  #else
-    GBitmap *bmp = gbitmap_create_from_png_data(download->data, download->length);
-  #endif
+  GBitmap *bmp = gbitmap_create_from_png_data(download->data, download->length);
   bitmap_layer_set_bitmap(bitmap_layer, bmp);
 
   // Save pointer to currently shown bitmap (to free it)
