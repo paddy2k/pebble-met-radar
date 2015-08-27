@@ -16,6 +16,11 @@
     "resources": {
         "media": [
             {
+                "file": "images/Note050615_0.png",
+                "name": "INFO_SCREEN",
+                "type": "png"
+            },
+            {
                 "file": "images/met-pebble-logo3.png",
                 "name": "MET_LOGO_3",
                 "type": "png"
@@ -28,7 +33,7 @@
         "basalt"
     ],
     "uuid": "0d8bdc35-f40f-47f7-ad21-3b668a393dd5",
-    "versionLabel": "1.0",
+    "versionLabel": "1.2",
     "watchapp": {
         "watchface": false
     }
